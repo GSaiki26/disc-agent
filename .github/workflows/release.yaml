@@ -1,0 +1,33 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  get_version:
+    uses: ./.github/workflows/toml_parser.yaml
+    with:
+      filepath: Cargo.toml
+      path: .package.version
+
+  release:
+    needs: get_version
+    if: ${{ needs.get_version.outputs.value != '' }}
+
+    runs-on: ubuntu-latest
+    env:
+      version: ${{ needs.get_version.outputs.value }}
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Create and push the tag
+        run: |
+          git config user.name 'Actions'
+          git config user.email 'github-actions@github.com'
+
+          git tag "v${{ env.version }}"
+          git push origin "v${{ env.version }}"

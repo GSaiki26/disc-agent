@@ -1,0 +1,32 @@
+name: toml-parser
+
+on:
+  workflow_call:
+    inputs:
+      filepath:
+        type: string
+        required: true
+        description: The TOML's filepath  to parse.
+      path:
+        type: string
+        required: true
+        description: The value's path to be extracted.
+
+    outputs:
+      value:
+        description: Project version
+        value: ${{ jobs.parser.outputs.value }}
+
+jobs:
+  parser:
+    runs-on: ubuntu-latest
+
+    outputs:
+      value: ${{ steps.get_value.outputs.result }}
+
+    steps:
+      - uses: actions/checkout@v6
+      - id: get_value
+        uses: mikefarah/yq@v4.50.1
+        with:
+          cmd: yq -oy "${{ inputs.path }}" ${{ inputs.filepath }}
